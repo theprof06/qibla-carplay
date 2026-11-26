@@ -36,7 +36,7 @@
 
   .compass-wrap { position: relative; width: min(84vw, 360px); aspect-ratio: 1; margin: 6px auto 0; }
   .compass-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
-  #dial { transition: transform .12s linear; transform-origin: 200px 200px; }
+  #dial { transition: transform .05s linear; transform-origin: 200px 200px; }
   .front-mark { fill: var(--accent); }
   .aligned #arrow { fill: var(--ok); }
   .aligned .ring { stroke: var(--ok); }
@@ -205,7 +205,7 @@
   // ---------- الحالة ----------
   let pos = null;
   try { const s = localStorage.getItem("qibla.pos"); if (s) pos = JSON.parse(s); } catch (_) {}
-  let heading = null, hx = 0, hy = 0, dialShown = 0, wasAligned = false, lastOrient = 0;
+  let heading = null, dialShown = 0, wasAligned = false, lastOrient = 0;
 
   function coords() { return pos || FALLBACK; }
 
@@ -252,10 +252,9 @@
     if (h == null) return;
     const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
     h = norm(h + ang);
-    // تنعيم بسيط علشان السهم ما يرتعشش
-    hx = hx * 0.75 + Math.cos(rad(h)) * 0.25;
-    hy = hy * 0.75 + Math.sin(rad(h)) * 0.25;
-    heading = norm(deg(Math.atan2(hy, hx)));
+    // سريع: اللفّة الكبيرة بتتنفذ فوراً، والرعشة الصغيرة بس اللي بتتنعّم
+    const d = heading == null ? 0 : rel(h, heading);
+    heading = (heading == null || Math.abs(d) > 15) ? h : norm(heading + d * 0.6);
     lastOrient = Date.now();
     $("noCompass").hidden = true;
     renderHeading();
