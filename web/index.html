@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>القبلة</title>
+<meta name="description" content="اتجاه القبلة من مكانك — بوصلة حيّة ووضع العربية">
+<meta name="theme-color" content="#0a5a4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="القبلة">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root {
+    --bg1: #0b6b5d; --bg2: #053a33;
+    --card: rgba(255,255,255,.08); --line: rgba(255,255,255,.18);
+    --text: #f4faf8; --muted: rgba(244,250,248,.65);
+    --accent: #ffffff; --gold: #d4af37; --ok: #3ddc84; --warn: #ffb648;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, "SF Arabic", "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--bg1), var(--bg2)) fixed;
+    padding: env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: center;
+  }
+  main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
+  header { text-align: center; padding-top: 18px; }
+  h1 { margin: 0; font-size: 34px; letter-spacing: .5px; }
+  #where { margin-top: 4px; color: var(--muted); font-size: 14px; min-height: 1.2em; }
+
+  .compass-wrap { position: relative; width: min(84vw, 360px); aspect-ratio: 1; margin: 6px auto 0; }
+  .compass-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  #dial { transition: transform .12s linear; transform-origin: 200px 200px; }
+  .front-mark { fill: var(--accent); }
+  .aligned #arrow { fill: var(--ok); }
+  .aligned .ring { stroke: var(--ok); }
+
+  #status { text-align: center; font-size: 22px; font-weight: 700; min-height: 1.4em; }
+  #status.ok { color: var(--ok); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 14px; text-align: center;
+  }
+  .card .t { font-size: 12px; color: var(--muted); }
+  .card .v { font-size: 26px; font-weight: 800; margin: 4px 0 2px; direction: ltr; }
+  .card .s { font-size: 12px; color: var(--muted); }
+
+  #car { display: none; }
+  #car.show { display: block; }
+  #car .side { font-size: 20px; font-weight: 800; margin: 4px 0; }
+
+  button.primary {
+    width: 100%; border: 0; border-radius: 14px; padding: 16px;
+    font: inherit; font-size: 18px; font-weight: 700;
+    color: #053a33; background: #fff; cursor: pointer;
+  }
+  button.primary:active { transform: scale(.98); }
+
+  .note { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .note.warn { color: var(--warn); }
+  details.card { text-align: right; }
+  details summary { cursor: pointer; font-weight: 700; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: "＋"; float: left; color: var(--muted); }
+  details[open] summary::after { content: "－"; }
+  details ol { margin: 10px 0 0; padding-inline-start: 20px; line-height: 1.9; font-size: 14px; }
+  footer { text-align: center; font-size: 12px; color: var(--muted); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>القبلة</h1>
+    <div id="where">الموقع الافتراضي: الدوحة</div>
+  </header>
+
+  <button id="start" class="primary">ابدأ البوصلة</button>
+
+  <div class="compass-wrap" id="compassWrap">
+    <svg viewBox="0 0 400 400" aria-label="بوصلة القبلة">
+      <!-- علامة اتجاه الموبايل (ثابتة) -->
+      <path class="front-mark" d="M200 4 L214 30 L186 30 Z"/>
+      <g id="dial">
+        <circle class="ring" cx="200" cy="200" r="168" fill="rgba(0,0,0,.18)" stroke="rgba(255,255,255,.35)" stroke-width="6"/>
+        <g id="ticks"></g>
+        <text x="200" y="92" text-anchor="middle" font-size="34" font-weight="800" fill="#ff5a5a">ش</text>
+        <text x="308" y="212" text-anchor="middle" font-size="22" fill="rgba(255,255,255,.6)">ق</text>
+        <text x="200" y="322" text-anchor="middle" font-size="22" fill="rgba(255,255,255,.6)">ج</text>
+        <text x="92"  y="212" text-anchor="middle" font-size="22" fill="rgba(255,255,255,.6)">غ</text>
+        <g id="qibla">
+          <path id="arrow" fill="#ffffff"
+                d="M200 66 L240 128 L214 124 L212 262 L188 262 L186 124 L160 128 Z"/>
+          <!-- الكعبة -->
+          <g transform="translate(200 30)">
+            <rect x="-20" y="-16" width="40" height="40" rx="5" fill="#111"/>
+            <rect x="-20" y="-4" width="40" height="7" fill="#d4af37"/>
+            <rect x="4" y="10" width="8" height="14" fill="#d4af37"/>
+          </g>
+        </g>
+        <circle cx="200" cy="200" r="11" fill="#fff"/>
+      </g>
+    </svg>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="t">زاوية القبلة</div>
+      <div class="v" id="deg">—</div>
+      <div class="s" id="dirName">—</div>
+    </div>
+    <div class="card">
+      <div class="t">المسافة لمكة</div>
+      <div class="v" id="dist">—</div>
+      <div class="s">خط مستقيم</div>
+    </div>
+  </div>
+
+  <div class="card" id="car">
+    <div class="t">🚗 وضع العربية — حسب اتجاه السير</div>
+    <div class="side" id="carSide">—</div>
+    <div class="s" id="carDeg"></div>
+  </div>
+
+  <div class="note warn" id="calib" hidden>البوصلة محتاجة معايرة: حرّك الموبايل في الهوا على شكل رقم 8.</div>
+  <div class="note" id="noCompass" hidden>الجهاز ده مفيهوش بوصلة. القرص ثابت والشمال لفوق، فاستخدم الزاوية وقارنها باتجاهك.</div>
+
+  <details class="card">
+    <summary>إزاي أستخدمه صح</summary>
+    <ol>
+      <li>امسك الموبايل مفرود وبعيد عن الحديد. جوه العربية البوصلة بتتلخبط، فلو هتصلي انزل من العربية الأول.</li>
+      <li>لف لحد السهم ما يبقى قدام العلامة اللي فوق ويخضرّ.</li>
+      <li>وإنت سايق، "وضع العربية" بيستخدم اتجاه السير من الـ GPS ومش محتاج بوصلة.</li>
+      <li>الدقة حوالي ±5°، ودي كافية لاتجاه الصلاة.</li>
+    </ol>
+  </details>
+
+  <details class="card">
+    <summary>حطه على الشاشة الرئيسية زي التطبيق</summary>
+    <ol>
+      <li><b>آيفون (Safari):</b> زرار المشاركة ⬆️ ← <b>Add to Home Screen</b> (إضافة إلى الشاشة الرئيسية).</li>
+      <li><b>أندرويد (Chrome):</b> القائمة ⋮ ← <b>Add to Home screen</b> أو <b>Install app</b>.</li>
+      <li>بعد كده هيفتح من غير شريط المتصفح، وكمان هيشتغل من غير نت.</li>
+    </ol>
+  </details>
+
+  <footer>نسخة الويب من <a href="https://github.com/theprof06/qibla-carplay">qibla-carplay</a></footer>
+</main>
+
+<script>
+(() => {
+  const KAABA = { lat: 21.422487, lon: 39.826206 };
+  const FALLBACK = { lat: 25.2854, lon: 51.5310 };
+  const NAMES = [
+    "شمال", "شمال شمال شرق", "شمال شرق", "شرق شمال شرق",
+    "شرق", "شرق جنوب شرق", "جنوب شرق", "جنوب جنوب شرق",
+    "جنوب", "جنوب جنوب غرب", "جنوب غرب", "غرب جنوب غرب",
+    "غرب", "غرب شمال غرب", "شمال غرب", "شمال شمال غرب"
+  ];
+  const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+  const norm = d => ((d % 360) + 360) % 360;
+  const rel = (target, from) => { let d = norm(target - from); return d > 180 ? d - 360 : d; };
+
+  function qiblaBearing(lat, lon) {
+    const p1 = rad(lat), p2 = rad(KAABA.lat), dl = rad(KAABA.lon - lon);
+    const y = Math.sin(dl) * Math.cos(p2);
+    const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+    return norm(deg(Math.atan2(y, x)));
+  }
+  function distKm(lat, lon) {
+    const R = 6371, dp = rad(KAABA.lat - lat), dl = rad(KAABA.lon - lon);
+    const a = Math.sin(dp/2)**2 + Math.cos(rad(lat)) * Math.cos(rad(KAABA.lat)) * Math.sin(dl/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  const dirName = d => NAMES[Math.floor(norm(d + 11.25) / 22.5) % 16];
+
+  // ---------- عناصر الصفحة ----------
+  const $ = id => document.getElementById(id);
+  const dial = $("dial"), qibla = $("qibla"), wrap = $("compassWrap");
+
+  // علامات القرص
+  const ticks = $("ticks");
+  for (let i = 0; i < 72; i++) {
+    const major = i % 9 === 0, mid = i % 3 === 0;
+    const len = major ? 18 : mid ? 11 : 6;
+    const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", 200); l.setAttribute("x2", 200);
+    l.setAttribute("y1", 36); l.setAttribute("y2", 36 + len);
+    l.setAttribute("stroke", major ? "rgba(255,255,255,.9)" : "rgba(255,255,255,.4)");
+    l.setAttribute("stroke-width", major ? 3 : 1.5);
+    l.setAttribute("transform", `rotate(${i * 5} 200 200)`);
+    ticks.appendChild(l);
+  }
+
+  // ---------- الحالة ----------
+  let pos = null;
+  try { const s = localStorage.getItem("qibla.pos"); if (s) pos = JSON.parse(s); } catch (_) {}
+  let heading = null, hx = 0, hy = 0, dialShown = 0, wasAligned = false, lastOrient = 0;
+
+  function coords() { return pos || FALLBACK; }
+
+  function renderStatic() {
+    const c = coords(), b = qiblaBearing(c.lat, c.lon);
+    qibla.setAttribute("transform", `rotate(${b.toFixed(1)} 200 200)`);
+    $("deg").textContent = Math.round(b) % 360 + "°";
+    $("dirName").textContent = dirName(b);
+    $("dist").textContent = Math.round(distKm(c.lat, c.lon)).toLocaleString("en-US") + " كم";
+    $("where").textContent = pos
+      ? (pos.live ? "حسب موقعك الحالي" : "حسب آخر موقع معروف")
+      : "الموقع الافتراضي: الدوحة";
+    return b;
+  }
+
+  function renderHeading() {
+    const b = qiblaBearing(coords().lat, coords().lon);
+    if (heading == null) { $("status").textContent = ""; return; }
+    // لف القرص بأقصر طريق (من غير لفّة كاملة عند 359→0)
+    const target = -heading;
+    dialShown += rel(target, dialShown);
+    dial.style.transform = `rotate(${dialShown}deg)`;
+
+    const r = rel(b, heading);
+    const aligned = Math.abs(r) < 4;
+    wrap.classList.toggle("aligned", aligned);
+    const st = $("status");
+    st.className = aligned ? "ok" : "";
+    st.textContent = aligned ? "✓ إنت متوجه للقبلة"
+      : (r > 0 ? `لف يمين ${Math.round(Math.abs(r))}°` : `لف شمال ${Math.round(Math.abs(r))}°`);
+    if (aligned && !wasAligned && navigator.vibrate) navigator.vibrate(60);
+    wasAligned = aligned;
+  }
+
+  // ---------- البوصلة ----------
+  function onOrient(e) {
+    let h = null;
+    if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) {
+      h = e.webkitCompassHeading;                       // iPhone
+      $("calib").hidden = !(e.webkitCompassAccuracy > 25 || e.webkitCompassAccuracy < 0);
+    } else if ((e.absolute || e.type === "deviceorientationabsolute") && e.alpha != null) {
+      h = 360 - e.alpha;                                // Android
+    }
+    if (h == null) return;
+    const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+    h = norm(h + ang);
+    // تنعيم بسيط علشان السهم ما يرتعشش
+    hx = hx * 0.75 + Math.cos(rad(h)) * 0.25;
+    hy = hy * 0.75 + Math.sin(rad(h)) * 0.25;
+    heading = norm(deg(Math.atan2(hy, hx)));
+    lastOrient = Date.now();
+    $("noCompass").hidden = true;
+    renderHeading();
+  }
+
+  async function startCompass() {
+    // آيفون (ودلوقتي كروم كمان) بيطلب إذن للبوصلة. نطلبه، ومهما كانت النتيجة نسمع للأحداث:
+    // لو الإذن اترفض مش هيوصل حاجة ورسالة "مفيش بوصلة" هتظهر لوحدها.
+    if (typeof DeviceOrientationEvent !== "undefined" &&
+        typeof DeviceOrientationEvent.requestPermission === "function") {
+      try {
+        await Promise.race([
+          DeviceOrientationEvent.requestPermission(),
+          new Promise(r => setTimeout(r, 4000))
+        ]);
+      } catch (_) {}
+    }
+    if ("ondeviceorientationabsolute" in window) {
+      window.addEventListener("deviceorientationabsolute", onOrient);
+    } else {
+      window.addEventListener("deviceorientation", onOrient);
+    }
+    setTimeout(() => { if (!lastOrient) $("noCompass").hidden = false; }, 2500);
+  }
+
+  // ---------- الموقع ووضع العربية ----------
+  function startLocation() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.watchPosition(p => {
+      pos = { lat: p.coords.latitude, lon: p.coords.longitude, live: true };
+      try { localStorage.setItem("qibla.pos", JSON.stringify({ lat: pos.lat, lon: pos.lon })); } catch (_) {}
+      const b = renderStatic();
+      renderHeading();
+
+      const sp = p.coords.speed, cr = p.coords.heading;
+      const car = $("car");
+      if (sp != null && sp > 3 && cr != null && !isNaN(cr)) {
+        const r = rel(b, cr), a = Math.abs(r);
+        $("carSide").textContent = a < 10 ? "القبلة قدامك" : a > 170 ? "القبلة وراك"
+          : (r > 0 ? "القبلة على يمينك" : "القبلة على شمالك");
+        $("carDeg").textContent = `بزاوية ${Math.round(a)}° من اتجاه السير`;
+        car.classList.add("show");
+      } else {
+        car.classList.remove("show");
+      }
+    }, err => {
+      if (!pos) $("where").textContent = "مقدرناش نعرف موقعك، فبنحسب من الدوحة";
+    }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+  }
+
+  async function keepAwake() {
+    try { if ("wakeLock" in navigator) await navigator.wakeLock.request("screen"); } catch (_) {}
+  }
+
+  $("start").addEventListener("click", async () => {
+    $("start").hidden = true;
+    const compass = startCompass();   // لازم تتنادي جوه الضغطة على الآيفون
+    startLocation();
+    keepAwake();
+    await compass;
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && $("start").hidden) keepAwake();
+  });
+
+  renderStatic();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
